@@ -2,7 +2,7 @@ blueprint:
   name: button_with_ac
   description: synch switch with ac
   domain: automation
-
+  source_url: https://github.com/MosheRW/homeAsistantBlueprints/blob/d85a9be8268477a8ef216d02462b2c2019d670bf/sync_ac_with_switch.yaml
   author: Moshe Winberg
 
   input:
