@@ -1,0 +1,155 @@
+blueprint:
+  name: button_with_ac
+  description: synch switch with ac
+  domain: automation
+
+  author: Moshe Winberg
+
+  input:
+
+    switch_entity:
+      name: switch
+      selector:
+        entity:
+          filter:
+            device_class: switch
+            domain: switch
+
+    ac_entity:
+      name: ac
+      selector:
+         entity:
+          filter:
+            domain: climate
+
+mode: single
+
+trigger:
+  - platform: state
+    entity_id: !input switch_entity
+    from: "on"
+    to: "off"
+    id: Switch off
+    alias: הכפתור כובה
+
+  - platform: state
+    entity_id: !input switch_entity
+    from: "off"
+    to: "on"
+    id: switch on
+    alias: הכפתור הופעל
+
+  - platform: state
+    entity_id: !input ac_entity
+    from: "off"
+    to: null
+    id: ac on
+    alias: מזגן מופעל
+  
+  - platform: state
+    entity_id: !input ac_entity
+    from: null
+    to: "off"
+    id: ac off
+    alias: מזגן כובה
+
+
+
+
+
+condition:
+  - alias: בדיקה האם אחד מהתנאים עבר
+    condition: or
+    conditions:
+      - alias: אם המזגן דולק
+        condition: and
+        conditions:        
+          - condition: trigger
+            id:
+              - switch off
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: 
+                  - !input ac_entity
+                state: "off"
+                
+      - alias: אם המזגן מכובה
+        condition: and
+        conditions:        
+          - condition: trigger
+            id:
+              - switch on
+          - condition: state
+            entity_id: !input ac_entity
+            state: "off"
+                
+      - alias: אם הכפתור דולק
+        condition: and
+        conditions:        
+          - condition: trigger
+            id:
+              - ac off
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: !input ac_entity
+                state: "on"
+                
+      - alias: אם הכפתור מכובה
+        condition: and
+        conditions:        
+          - condition: trigger
+            id:
+              - ac on
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: !input ac_entity
+                state: "off"
+  
+
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - Switch off
+        sequence:
+          - type: turn_off            
+            entity_id: !input ac_entity
+            domain: climate            
+        alias: כיבוי המזגן
+
+      - conditions:
+          - condition: trigger
+            id:
+              - switch on
+        sequence:
+          - type: turn_on
+            entity_id: !input ac_entity
+            domain: climate
+        alias: הדלקת המזגן
+
+      - conditions:
+          - condition: trigger
+            id:
+              - ac on
+        sequence:
+          - type: turn_on
+            entity_id: !input switch_entity
+            domain: state
+        alias: הפעלת הכפתור
+
+      - conditions:
+          - condition: trigger
+            id:
+              - Module off
+        sequence:
+          - type: turn_off
+            entity_id: !input switch_entity
+            domain: state
+            alias: כיבוי כפתור
+        alias: כיבוי הכפתור
+
+ 
