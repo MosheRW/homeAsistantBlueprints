@@ -29,39 +29,39 @@ trigger:
     entity_id: !input switch_entity
     from: "on"
     to: "off"
-    id: Switch off
-    alias: הכפתור כובה
+    id: switch off
+    alias: the switch turned off
 
   - platform: state
     entity_id: !input switch_entity
     from: "off"
     to: "on"
     id: switch on
-    alias: הכפתור הופעל
+    alias: the switch turned on
 
   - platform: state
     entity_id: !input ac_entity
     from: "off"
     to: null
     id: ac on
-    alias: מזגן מופעל
+    alias: the ac turned on
   
   - platform: state
     entity_id: !input ac_entity
     from: null
     to: "off"
     id: ac off
-    alias: מזגן כובה
+    alias: the switch turned off
 
 
 
 
 
 condition:
-  - alias: בדיקה האם אחד מהתנאים עבר
+  - alias: if one of the cons is true
     condition: or
     conditions:
-      - alias: אם המזגן דולק
+      - alias: if the ac is on
         condition: and
         conditions:        
           - condition: trigger
@@ -74,7 +74,7 @@ condition:
                   - !input ac_entity
                 state: "off"
                 
-      - alias: אם המזגן מכובה
+      - alias: if the ac is off
         condition: and
         conditions:        
           - condition: trigger
@@ -84,7 +84,7 @@ condition:
             entity_id: !input ac_entity
             state: "off"
                 
-      - alias: אם הכפתור דולק
+      - alias: if the switch is on
         condition: and
         conditions:        
           - condition: trigger
@@ -96,7 +96,7 @@ condition:
                 entity_id: !input ac_entity
                 state: "on"
                 
-      - alias: אם הכפתור מכובה
+      - alias: if the switch is off
         condition: and
         conditions:        
           - condition: trigger
@@ -114,42 +114,44 @@ action:
       - conditions:
           - condition: trigger
             id:
-              - Switch off
+              - switch off
         sequence:
-          - type: turn_off            
-            entity_id: !input ac_entity
-            domain: climate            
-        alias: כיבוי המזגן
-
+          - service: climate.set_hvac_mode
+            target:
+              entity_id:  !input ac_entity               
+            data:
+              hvac_mode: "off"         
+        alias: ac power off
       - conditions:
           - condition: trigger
             id:
               - switch on
         sequence:
-          - type: turn_on
-            entity_id: !input ac_entity
-            domain: climate
-        alias: הדלקת המזגן
+          - service: climate.set_hvac_mode
+            target:
+              entity_id:  !input ac_entity               
+            data:
+              hvac_mode: "cool"         
 
+        alias: ac power on
       - conditions:
           - condition: trigger
             id:
               - ac on
         sequence:
-          - type: turn_on
-            entity_id: !input switch_entity
-            domain: state
+          - service: switch.turn_on
+            target:
+              entity_id: !input switch_entity            
         alias: הפעלת הכפתור
 
       - conditions:
           - condition: trigger
             id:
-              - Module off
+              - ac off
         sequence:
-          - type: turn_off
-            entity_id: !input switch_entity
-            domain: state
-            alias: כיבוי כפתור
-        alias: כיבוי הכפתור
-
+          - service: switch.turn_off
+            target:
+              entity_id: !input switch_entity
+            alias: switch power off
+        alias: switch power off
  
